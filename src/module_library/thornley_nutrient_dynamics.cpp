@@ -20,7 +20,11 @@ std::vector<std::string> thornley_nutrient_dynamics::generate_multi_organ_quanti
     std::vector<std::string> multi_organ_vector;
     for (organ const& x : organs) {
         for (std::string const& n : quantity_names) {
-            multi_organ_vector.push_back(add_class_prefix_to_quantity_name(x.name(), n));
+            if (n == ""){
+                multi_organ_vector.push_back(x.name());
+            }else{
+                multi_organ_vector.push_back(add_class_prefix_to_quantity_name(x.name(), n));
+            }
         }
     }
     return multi_organ_vector;
@@ -38,8 +42,13 @@ std::vector<std::string> thornley_nutrient_dynamics::generate_quantity_names_fro
     std::set<std::string> all_quantity_names;  // use a set to prevent duplicates
     for (transport_link const& x : organ_links) {
         for (std::string const& n : quantity_names) {
-            all_quantity_names.insert(add_class_prefix_to_quantity_name(x.first.name(), n));
-            all_quantity_names.insert(add_class_prefix_to_quantity_name(x.second.name(), n));
+            if (n == ""){
+                all_quantity_names.insert(x.first.name());
+                all_quantity_names.insert(x.second.name());
+            }else{
+                all_quantity_names.insert(add_class_prefix_to_quantity_name(x.first.name(), n));
+                all_quantity_names.insert(add_class_prefix_to_quantity_name(x.second.name(), n));
+            }
         }
     }
     return string_set_to_string_vector(all_quantity_names);
@@ -74,8 +83,16 @@ std::vector<std::pair<double const*, double const*>> thornley_nutrient_dynamics:
 {
     std::vector<std::pair<double const*, double const*>> pointer_pairs;
     for (size_t i = 0; i < organ_links.size(); ++i) {
-        std::string first_name = add_class_prefix_to_quantity_name(organ_links[i].first.name(), base_name);
-        std::string second_name = add_class_prefix_to_quantity_name(organ_links[i].second.name(), base_name);
+        std::string first_name;
+        std::string second_name;
+        if (base_name == ""){
+            first_name = organ_links[i].first.name();
+            second_name = organ_links[i].second.name();
+        }else{
+            first_name = add_class_prefix_to_quantity_name(organ_links[i].first.name(), base_name);
+            second_name = add_class_prefix_to_quantity_name(organ_links[i].second.name(), base_name);
+        }
+        
         pointer_pairs.push_back(std::pair<double const*, double const*>(
             get_ip(input_quantities, first_name),
             get_ip(input_quantities, second_name)));
