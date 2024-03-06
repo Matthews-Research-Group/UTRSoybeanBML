@@ -1,5 +1,7 @@
 ## UTRSoybeanBML
-PUT AN OVERVIEW OF THE MODULE LIBRARY HERE
+
+An overview of the Thornley utilization-transport-resistance (UTR) model
+implemented here can be found in `UTR.md`.
 
 ### Installation
 
