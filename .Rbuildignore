@@ -59,3 +59,6 @@
 
 ^LICENSE\.md$
 # Required to be in the repository but not allowed on CRAN
+
+^UTR\.md$
+# Additional documentation for this module library
