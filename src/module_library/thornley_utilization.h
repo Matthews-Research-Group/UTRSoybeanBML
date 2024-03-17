@@ -31,7 +31,6 @@ class thornley_utilization : public differential_module
 
     // Pointers to input parameters
     std::vector<double const*> const substrate_carbon_source_rate_ips;
-    std::vector<double const*> const mass_ips;
     std::vector<double const*> const utilization_rate_ips;
     std::vector<double const*> const senescence_rate_ips;
     std::vector<double const*> const respiration_factor_ips;

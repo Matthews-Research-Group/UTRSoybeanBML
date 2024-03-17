@@ -81,7 +81,6 @@ class thornley_utilization_calculator : public direct_module
     std::vector<thornley_nutrient_dynamics::organ> const organs;
 
     // Pointers to input parameters
-    std::vector<double const*> const mass_ips;
     std::vector<double const*> const structural_carbon_ips;
     std::vector<double const*> const substrate_carbon_ips;
     std::vector<double const*> const utilization_rate_constant_ips;

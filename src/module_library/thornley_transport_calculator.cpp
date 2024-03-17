@@ -23,7 +23,6 @@ thornley_transport_calculator::thornley_transport_calculator(
       organ_links(organ_links),
 
       // Get pointers to input parameters
-      mass_ips(get_transport_link_ips(input_quantities, organ_links, "")),
       substrate_carbon_ips(get_transport_link_ips(input_quantities, organ_links, "substrate_carbon")),
       structural_carbon_ips(get_transport_link_ips(input_quantities, organ_links, "structural_carbon")),
       
@@ -75,11 +74,10 @@ void thornley_transport_calculator::do_multi_organ_operation() const
 
     // Calculate transport rates between organs and update the relevant outputs
     for (size_t i = 0; i < organ_links.size(); ++i) {
-        // double const pairwise_mass = *(mass_ips[i].first) * *(mass_ips[i].second);  ;  // Mg / ha
-        // double const beta_factor = pow(pairwise_mass, transportation_beta_exponent);   // [Mg / ha]^beta
-        double const beta_factor = pow(*(mass_ips[i].second), transportation_beta_exponent);   // [Mg / ha]^beta
-        double const substrate_gradient = (*substrate_carbon_ips[i].first / *mass_ips[i].first -
-                                          *substrate_carbon_ips[i].second / *mass_ips[i].second);   // [10^(-4) mol C / Mg]
+        double const pairwise_mass = std::min(*structural_carbon_ips[i].first, *structural_carbon_ips[i].second);  ;  // Mg / ha
+        double const beta_factor = pow(pairwise_mass, transportation_beta_exponent);   // [Mg / ha]^beta
+        double const substrate_gradient = (*substrate_carbon_ips[i].first / *structural_carbon_ips[i].first -
+                                          *substrate_carbon_ips[i].second / *structural_carbon_ips[i].second);   // [dimensionless]
         double transport_rate = beta_factor * *substrate_conductance_ips[i] * substrate_gradient;  // mol / m^2 / hr
         
         if ((organ_links[i].second.name() == "Pod" && (DVI < Pod_start_dvi)) || (DVI>stop_growth_dvi)){

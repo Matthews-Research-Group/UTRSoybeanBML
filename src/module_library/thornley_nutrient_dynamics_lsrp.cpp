@@ -149,7 +149,6 @@ thornley_biomass_calculator_lsrp::thornley_biomass_calculator_lsrp(
     state_map* output_quantities)
     : thornley_biomass_calculator(
           organ_list,
-          organ_transport_links,
           input_quantities,
           output_quantities)
 {
@@ -157,7 +156,7 @@ thornley_biomass_calculator_lsrp::thornley_biomass_calculator_lsrp(
 
 std::vector<std::string> thornley_biomass_calculator_lsrp::get_inputs()
 {
-    return thornley_biomass_calculator::get_inputs(organ_list, organ_transport_links);
+    return thornley_biomass_calculator::get_inputs(organ_list);
 }
 
 std::vector<std::string> thornley_biomass_calculator_lsrp::get_outputs()
@@ -174,38 +173,4 @@ std::string thornley_biomass_calculator_lsrp::get_name()
 void thornley_biomass_calculator_lsrp::do_operation() const
 {
     thornley_biomass_calculator::do_multi_organ_operation();
-}
-
-/////////////
-// biomass //
-/////////////
-
-thornley_biomass_lsrp::thornley_biomass_lsrp(
-    state_map const& input_quantities,
-    state_map* output_quantities)
-    : thornley_biomass(
-          organ_list,
-          input_quantities,
-          output_quantities)
-{
-}
-
-std::vector<std::string> thornley_biomass_lsrp::get_inputs()
-{
-    return thornley_biomass::get_inputs(organ_list);
-}
-
-std::vector<std::string> thornley_biomass_lsrp::get_outputs()
-{
-    return thornley_biomass::get_outputs(organ_list);
-}
-
-std::string thornley_biomass_lsrp::get_name()
-{
-    return "thornley_biomass_lsrp";
-}
-
-void thornley_biomass_lsrp::do_operation() const
-{
-    thornley_biomass::do_multi_organ_operation();
 }

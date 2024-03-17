@@ -30,7 +30,6 @@ class thornley_transport : public differential_module
     std::vector<thornley_nutrient_dynamics::transport_link> const organ_links;
 
     // Pointers to input parameters
-    std::vector<std::pair<double const*, double const*>> const mass_ips;
     std::vector<double const*> const substrate_transport_ips;
 
     // Pointers to output parameters

@@ -25,7 +25,6 @@ thornley_utilization_calculator::thornley_utilization_calculator(
       organs(organs),
 
       // Get pointers to input quantities
-      mass_ips(get_multi_organ_ips(input_quantities, organs, "")),
       structural_carbon_ips(get_multi_organ_ips(input_quantities, organs, "structural_carbon")),
       substrate_carbon_ips(get_multi_organ_ips(input_quantities, organs, "substrate_carbon")),
 
@@ -87,8 +86,9 @@ void thornley_utilization_calculator::do_multi_organ_operation() const
     for (size_t i = 0; i < organs.size(); ++i) {
         // double total_C_per_m2 = *structural_carbon_ips[i] + *substrate_carbon_ips[i] ; // mol C / m^2 
         double structural_C_per_m2 = *structural_carbon_ips[i]; // mol C / m^2 
+        double substrate_C_concentration = *substrate_carbon_ips[i] / structural_C_per_m2;
         double utilization_rate_per_m2 = structural_C_per_m2 * hill_reaction_rate(
-            *substrate_carbon_ips[i] / *mass_ips[i], // [10^-4 mol/Mg]
+            substrate_C_concentration, // [dimensionless]
             hill_coefficient,
             *utilization_rate_constant_ips[i],
             *utilization_km_ips[i]);  // mol / m2 / hr

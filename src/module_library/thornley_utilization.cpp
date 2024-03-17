@@ -25,7 +25,6 @@ thornley_utilization::thornley_utilization(
 
       // Get pointers to input parameters
       substrate_carbon_source_rate_ips(get_external_substrate_ips(input_quantities, organs)),
-      mass_ips(get_multi_organ_ips(input_quantities, organs, "")),
       utilization_rate_ips(get_multi_organ_ips(input_quantities, organs, "utilization_rate")),
       senescence_rate_ips(get_multi_organ_ips(input_quantities, organs, "senescence_rate")),
       respiration_factor_ips(get_multi_organ_ips(input_quantities, organs, "respiration_factor")),

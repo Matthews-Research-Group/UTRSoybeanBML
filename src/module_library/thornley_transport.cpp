@@ -23,7 +23,6 @@ thornley_transport::thornley_transport(
       organ_links(organ_links),
 
       // Get pointers to input parameters
-      mass_ips(get_transport_link_ips(input_quantities, organ_links, "")),
       substrate_transport_ips(get_ip(input_quantities, generate_pairwise_names("substrate_transport", organ_links))),
 
       // Get pointers to output parameters

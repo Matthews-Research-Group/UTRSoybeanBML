@@ -10,7 +10,6 @@
 #include "thornley_transport_calculator.h"
 #include "thornley_transport.h"
 #include "thornley_biomass_calculator.h"
-#include "thornley_biomass.h"
 
 using thornley_nutrient_dynamics::organ;
 using thornley_nutrient_dynamics::organ_library;
@@ -139,31 +138,6 @@ class thornley_biomass_calculator_lsrp : public thornley_biomass_calculator
 {
    public:
     thornley_biomass_calculator_lsrp(
-        state_map const& input_quantities,
-        state_map* output_quantities);
-
-    static std::vector<std::string> get_inputs();
-    static std::vector<std::string> get_outputs();
-    static std::string get_name();
-
-   private:
-    // Main operation
-    void do_operation() const;
-};
-
-
-/**
- * @class thornley_biomass_lsrp
- * 
- * @brief A child class of thornley_biomass where the organs have been set to
- * `leaf`, `stem`, `root`, and `pod` (hence the name `lsrp`). Instances of this class can be created using the
- * module wrapper factory.
- */
-
-class thornley_biomass_lsrp : public thornley_biomass
-{
-   public:
-    thornley_biomass_lsrp(
         state_map const& input_quantities,
         state_map* output_quantities);
 

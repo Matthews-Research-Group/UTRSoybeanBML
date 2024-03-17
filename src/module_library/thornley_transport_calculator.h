@@ -72,7 +72,6 @@ class thornley_transport_calculator : public direct_module
     std::vector<thornley_nutrient_dynamics::transport_link> const organ_links;
 
     // Pointers to input parameters
-    std::vector<std::pair<double const*, double const*>> const mass_ips;
     std::vector<std::pair<double const*, double const*>> const substrate_carbon_ips;
     std::vector<std::pair<double const*, double const*>> const structural_carbon_ips;
     std::vector<double const*> const substrate_conductance_ips;

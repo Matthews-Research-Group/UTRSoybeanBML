@@ -12,6 +12,5 @@ creator_map UTRSoybeanBML::module_library::library_entries =
     {"thornley_utilization_lsrp",                             &create_mc<thornley_utilization_lsrp>},
     {"thornley_transport_calculator_lsrp",                    &create_mc<thornley_transport_calculator_lsrp>},
     {"thornley_transport_lsrp",                               &create_mc<thornley_transport_lsrp>},
-    {"thornley_biomass_calculator_lsrp",                      &create_mc<thornley_biomass_calculator_lsrp>},
-    {"thornley_biomass_lsrp",                                 &create_mc<thornley_biomass_lsrp>}
+    {"thornley_biomass_calculator_lsrp",                      &create_mc<thornley_biomass_calculator_lsrp>}
 };
