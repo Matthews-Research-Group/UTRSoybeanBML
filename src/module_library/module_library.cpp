@@ -3,13 +3,13 @@
 
 // Include all the header files that define the modules.
 #include "example_module.h"
-#include "parameter_calculator.h"
+#include "lai_from_structural_carbon.h"
 #include "thornley_nutrient_dynamics_lsrp.h"
 
 creator_map UTRSoybeanBML::module_library::library_entries =
 {
     {"example_module",                                        &create_mc<example_module>},
-    {"parameter_calculator",                                  &create_mc<parameter_calculator>},
+    {"lai_from_structural_carbon",                            &create_mc<lai_from_structural_carbon>},
     {"thornley_utilization_calculator_lsrp",                  &create_mc<thornley_utilization_calculator_lsrp>},
     {"thornley_utilization_lsrp",                             &create_mc<thornley_utilization_lsrp>},
     {"thornley_transport_calculator_lsrp",                    &create_mc<thornley_transport_calculator_lsrp>},
