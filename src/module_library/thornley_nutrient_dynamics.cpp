@@ -216,5 +216,5 @@ double thornley_nutrient_dynamics::senescence_logistic_rate(
     double alpha,
     double beta)
 {   
-    return structural_mol_per_m2 * max_senescence_rate / (1.0 + exp(alpha + beta * DVI));
+    return structural_mol_per_m2 * max_senescence_rate / (1.0 + exp(alpha * (beta - DVI)));
 }

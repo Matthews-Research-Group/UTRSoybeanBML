@@ -101,7 +101,7 @@ double hill_reaction_rate(
     double concentration_at_half_max);
 
 // Define some constants used by the models
-double const hill_coefficient = 1;
+double const hill_coefficient = 2;
 
 double senescence_logistic_rate(
     double structural_mass,

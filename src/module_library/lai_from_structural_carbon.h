@@ -31,7 +31,8 @@ class lai_from_structural_carbon : public direct_module
           Leaf_carbon_to_mass_factor_ip(get_ip(input_quantities, "Leaf_carbon_to_mass_factor")),
           // Get pointers to output quantities
           Sp_op{get_op(output_quantities, "Sp")},
-          lai_op{get_op(output_quantities, "lai")}   {
+          lai_op{get_op(output_quantities, "lai")}   
+    {
     }
     static string_vector get_inputs();
     static string_vector get_outputs();
@@ -59,15 +60,17 @@ string_vector lai_from_structural_carbon::get_inputs()
         "iSp",
         "TTc",
         "Sp_thermal_time_decay",
-        "Leaf_structural_carbon_ip",
-        "Leaf_carbon_to_mass_factor_ip"};
+        "Leaf_structural_carbon",
+        "Leaf_carbon_to_mass_factor"
+    };
 }
 
 string_vector lai_from_structural_carbon::get_outputs()
 {
     return {
         "Sp",
-        "lai"};
+        "lai"
+    };
 }
 
 void lai_from_structural_carbon::do_operation() const

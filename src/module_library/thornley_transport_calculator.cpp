@@ -74,8 +74,8 @@ void thornley_transport_calculator::do_multi_organ_operation() const
 
     // Calculate transport rates between organs and update the relevant outputs
     for (size_t i = 0; i < organ_links.size(); ++i) {
-        double const pairwise_mass = std::min(*structural_carbon_ips[i].first, *structural_carbon_ips[i].second);  ;  // Mg / ha
-        double const beta_factor = pow(pairwise_mass, transportation_beta_exponent);   // [Mg / ha]^beta
+        double const pairwise_mass = std::min(*structural_carbon_ips[i].first, *structural_carbon_ips[i].second);  ;  // mol / m^2
+        double const beta_factor = pow(pairwise_mass, transportation_beta_exponent);   // [mol/m^2]^beta
         double const substrate_gradient = (*substrate_carbon_ips[i].first / *structural_carbon_ips[i].first -
                                           *substrate_carbon_ips[i].second / *structural_carbon_ips[i].second);   // [dimensionless]
         double transport_rate = beta_factor * *substrate_conductance_ips[i] * substrate_gradient;  // mol / m^2 / hr
