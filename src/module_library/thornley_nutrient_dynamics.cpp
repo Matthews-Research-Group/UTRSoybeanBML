@@ -1,7 +1,8 @@
 #include <vector>
 #include <set>
 #include <string>
-#include <cmath>                           // for pow
+#include <cmath>                                     // for pow and abs
+#include <algorithm>                                 // for max
 #include "../framework/module_helper_functions.h"    // for add_class_prefix_to_quantity_name, get_ip, get_op
 #include "../framework/validate_dynamical_system.h"  // for string_set_to_string_vector
 #include "thornley_nutrient_dynamics.h"
@@ -191,6 +192,7 @@ std::vector<std::string> thornley_nutrient_dynamics::generate_pairwise_names(std
  * has the same units as the `max_reaction_rate` input. Note that when `hill_coefficient` is 1,
  * the Hill equation reduces to the Michaelis-Menten equation. See the Wikipedia page for more
  * details: https://en.wikipedia.org/wiki/Hill_equation_(biochemistry).
+ * If the substrate concentration is negative, then 
  */
 double thornley_nutrient_dynamics::hill_reaction_rate(
     double concentration,
@@ -198,7 +200,7 @@ double thornley_nutrient_dynamics::hill_reaction_rate(
     double max_reaction_rate,
     double concentration_at_half_max)
 {
-    return max_reaction_rate / (1.0 + pow(concentration_at_half_max / concentration, hill_coefficient));
+    return max_reaction_rate / (1.0 + pow(concentration_at_half_max / std::max(1e-10, concentration), hill_coefficient));
 }
 /**
  * @brief A function that determines a reaction rate using the logistic equation, where the output

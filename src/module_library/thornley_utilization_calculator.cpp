@@ -102,6 +102,7 @@ void thornley_utilization_calculator::do_multi_organ_operation() const
         
         if ((organs[i].name() == "Pod" && DVI < Pod_start_dvi) || DVI > stop_growth_dvi){
             utilization_rate_per_m2 = 0;
+            senescence_rate_per_m2 = 0;
         }
         update(utilization_rate_ops[i], utilization_rate_per_m2);
         update(senescence_rate_ops[i], senescence_rate_per_m2);
