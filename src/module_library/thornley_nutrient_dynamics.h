@@ -103,10 +103,9 @@ double hill_reaction_rate(
 // Define some constants used by the models
 double const hill_coefficient = 2;
 
-double senescence_logistic_rate(
-    double structural_mass,
+double senescence_logistic_fraction(
     double time,
-    double max_senescence_rate,
+    double max_senescence_fraction,
     double alpha,
     double beta);
 

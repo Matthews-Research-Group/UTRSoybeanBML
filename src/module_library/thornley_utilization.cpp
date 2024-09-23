@@ -24,11 +24,13 @@ thornley_utilization::thornley_utilization(
       organs(organs),
 
       // Get pointers to input parameters
+      carbon_to_mass_factor_ips(get_multi_organ_ips(input_quantities, organs, "carbon_to_mass_factor")),
       substrate_carbon_source_rate_ips(get_external_substrate_ips(input_quantities, organs)),
       utilization_rate_ips(get_multi_organ_ips(input_quantities, organs, "utilization_rate")),
-      senescence_rate_ips(get_multi_organ_ips(input_quantities, organs, "senescence_rate")),
       respiration_factor_ips(get_multi_organ_ips(input_quantities, organs, "respiration_factor")),
-      senescence_reuse_factor_ips(get_multi_organ_ips(input_quantities, organs, "senescence_reuse_factor")),
+      structural_senescence_rate_ips(get_multi_organ_ips(input_quantities, organs, "structural_senescence_rate")),
+      substrate_senescence_rate_ips(get_multi_organ_ips(input_quantities, organs, "substrate_senescence_rate")),
+
       // Get reference to input parameters
       stop_growth_dvi(get_input(input_quantities, "stop_growth_dvi")),
       DVI(get_input(input_quantities, "DVI")), // any difference from {}?
@@ -45,11 +47,11 @@ std::vector<std::string> thornley_utilization::get_inputs(std::vector<organ> con
 {
     // List the quantity names that are guaranteed to exist for each organ
     std::vector<std::string> quantities_for_each_organ = {
-        "" ,                        // Mg / ha
-        "utilization_rate",         // mol / m^2 / hr
-        "senescence_rate",          // mol / m^2 / hr
-        "respiration_factor",       // dimensionless
-        "senescence_reuse_factor",  // dimensionless
+        "" ,                            // Mg / ha
+        "utilization_rate",             // mol / m^2 / hr
+        "structural_senescence_rate",   // mol / m^2 / hr
+        "substrate_senescence_rate",    // mol / m^2 / hr
+        "respiration_factor"            // dimensionless
     };
 
     // Append the organ names as prefixes
@@ -70,7 +72,7 @@ std::vector<std::string> thornley_utilization::get_outputs(std::vector<organ> co
         "structural_carbon",  // mol / m^2
         "substrate_carbon",   // mol / m^2
         "respiration_loss",    // mol / m^2 / hr
-        "senescence_loss"    // mol / m^2 / hr
+        "senescence_loss"    // Mg / ha / hr
     };
 
     // Append the organ names as prefixes
@@ -87,8 +89,7 @@ void thornley_utilization::do_multi_organ_operation() const
 
     // For Pod, utilization is switched off before a threshold DOY
     for (size_t i = 0; i < organs.size(); ++i) {
-        double change_in_substrate_pool_per_m2 = -*utilization_rate_ips[i] + // mol / m^2 / hr
-                                           (*senescence_rate_ips[i]) * (*senescence_reuse_factor_ips[i]);  
+        double change_in_substrate_pool_per_m2 = - *utilization_rate_ips[i] - *substrate_senescence_rate_ips[i]; // mol / m^2 / hr 
         if (substrate_carbon_source_rate_ips[i] && DVI < stop_growth_dvi) {
             // TEMPORARY: We must convert the substrate carbon source rate from
             // Mg / ha / hr to mol / m^2 / hr, assuming that all carbon was
@@ -109,15 +110,15 @@ void thornley_utilization::do_multi_organ_operation() const
         }
 
         // senescence rate 
-        double litter = *senescence_rate_ips[i] * (1 - *senescence_reuse_factor_ips[i]);  // mol C / m^2 / hr
+        double litter = (*structural_senescence_rate_ips[i] + *substrate_senescence_rate_ips[i]) * *carbon_to_mass_factor_ips[i] ;  // Mg / ha / hr
         double respiration_loss = *respiration_factor_ips[i] * *utilization_rate_ips[i];  // mol C / m^2 / hr
         double growth_from_utilization_per_m2 = (*utilization_rate_ips[i]\
                                          - respiration_loss \
-                                         - *senescence_rate_ips[i]);     // mol / m^2 / hr
+                                         - *structural_senescence_rate_ips[i]);     // mol / m^2 / hr
 
         update(substrate_carbon_ops[i], change_in_substrate_pool_per_m2); // mol / m^2
         update(structural_carbon_ops[i], growth_from_utilization_per_m2); // mol / m^2
         update(respiration_loss_ops[i], respiration_loss);         // mol C / m^2
-        update(senescence_loss_ops[i], litter);                    // mol C / m^2
+        update(senescence_loss_ops[i], litter);                    // Mg / ha
     }
 }

@@ -85,9 +85,10 @@ class thornley_utilization_calculator : public direct_module
     std::vector<double const*> const substrate_carbon_ips;
     std::vector<double const*> const utilization_rate_constant_ips;
     std::vector<double const*> const utilization_km_ips;
-    std::vector<double const*> const senescence_rate_max_ips;
+    std::vector<double const*> const senescence_fraction_max_ips;
     std::vector<double const*> const senescence_alpha_ips;
     std::vector<double const*> const senescence_beta_ips;
+    std::vector<double const*> const senescence_reuse_factor_ips;
     
     // References to input parameters
     double const& Pod_start_dvi;
@@ -96,7 +97,8 @@ class thornley_utilization_calculator : public direct_module
 
     // Pointers to output parameters
     std::vector<double*> const utilization_rate_ops;
-    std::vector<double*> const senescence_rate_ops;
+    std::vector<double*> const structural_senescence_rate_ops;
+    std::vector<double*> const substrate_senescence_rate_ops;
 
    protected:
     void do_multi_organ_operation() const;

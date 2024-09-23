@@ -211,12 +211,11 @@ double thornley_nutrient_dynamics::hill_reaction_rate(
  * Soybean-BioCro: a semi-mechanistic model of soybean growth, in silico Plants, Volume 4, Issue 1, 
  * 2022, diab032, https://doi.org/10.1093/insilicoplants/diab032
  */
-double thornley_nutrient_dynamics::senescence_logistic_rate(
-    double structural_mol_per_m2,
+double thornley_nutrient_dynamics::senescence_logistic_fraction(
     double DVI,
-    double max_senescence_rate,
+    double max_senescence_fraction,
     double alpha,
     double beta)
 {   
-    return structural_mol_per_m2 * max_senescence_rate / (1.0 + exp(alpha * (beta - DVI)));
+    return  max_senescence_fraction / (1.0 + exp(alpha * (beta - DVI)));
 }

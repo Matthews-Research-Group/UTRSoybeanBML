@@ -11,7 +11,7 @@ using thornley_nutrient_dynamics::get_multi_organ_ips;
 using thornley_nutrient_dynamics::get_multi_organ_ops;
 using thornley_nutrient_dynamics::hill_coefficient;
 using thornley_nutrient_dynamics::hill_reaction_rate;
-using thornley_nutrient_dynamics::senescence_logistic_rate;
+using thornley_nutrient_dynamics::senescence_logistic_fraction;
 using thornley_nutrient_dynamics::organ;
 
 thornley_utilization_calculator::thornley_utilization_calculator(
@@ -31,9 +31,10 @@ thornley_utilization_calculator::thornley_utilization_calculator(
       // Get pointers to input parameters
       utilization_rate_constant_ips(get_multi_organ_ips(input_quantities, organs, "utilization_rate_constant")),
       utilization_km_ips(get_multi_organ_ips(input_quantities, organs, "utilization_km")),
-      senescence_rate_max_ips(get_multi_organ_ips(input_quantities, organs, "senescence_rate_max")),
+      senescence_fraction_max_ips(get_multi_organ_ips(input_quantities, organs, "senescence_fraction_max")),
       senescence_alpha_ips(get_multi_organ_ips(input_quantities, organs, "senescence_alpha")),
       senescence_beta_ips(get_multi_organ_ips(input_quantities, organs, "senescence_beta")),
+      senescence_reuse_factor_ips(get_multi_organ_ips(input_quantities, organs, "senescence_reuse_factor")),
 
       // Get references to input parameters
       Pod_start_dvi(get_input(input_quantities, "Pod_start_dvi")),
@@ -42,7 +43,8 @@ thornley_utilization_calculator::thornley_utilization_calculator(
 
       // Get pointers to output parameters
       utilization_rate_ops(get_multi_organ_ops(output_quantities, organs, "utilization_rate")),
-      senescence_rate_ops(get_multi_organ_ops(output_quantities, organs, "senescence_rate"))
+      structural_senescence_rate_ops(get_multi_organ_ops(output_quantities, organs, "structural_senescence_rate")),
+      substrate_senescence_rate_ops(get_multi_organ_ops(output_quantities, organs, "substrate_senescence_rate"))
 {
 }
 
@@ -55,10 +57,10 @@ std::vector<std::string> thornley_utilization_calculator::get_inputs(std::vector
         "substrate_carbon",                  // mol / m^2
         "utilization_rate_constant",         // hr^-1
         "utilization_km",                    // [10^-4 mol/Mg]
-        "senescence_rate_max",               // hr^-1
+        "senescence_fraction_max",           // hr^-1
         "senescence_alpha",                  // dimensionless
-        "senescence_beta"                    // [DVI]^-1
-
+        "senescence_beta",                   // [DVI]^-1
+        "senescence_reuse_factor"            // dimensionless
     };
 
     // Append the organ names as prefixes
@@ -74,7 +76,8 @@ std::vector<std::string> thornley_utilization_calculator::get_outputs(std::vecto
     // List the quantity names that exist for each organ
     std::vector<std::string> quantities_for_each_organ = {
         "utilization_rate",  // mol / m^2 / hr
-        "senescence_rate",   // mol / m^2 / hr
+        "structural_senescence_rate",   // mol / m^2 / hr
+        "substrate_senescence_rate",   // mol / m^2 / hr
     };
     return generate_multi_organ_quantity_names(organs, quantities_for_each_organ);
 }
@@ -86,25 +89,31 @@ void thornley_utilization_calculator::do_multi_organ_operation() const
     for (size_t i = 0; i < organs.size(); ++i) {
         // double total_C_per_m2 = *structural_carbon_ips[i] + *substrate_carbon_ips[i] ; // mol C / m^2 
         double structural_C_per_m2 = *structural_carbon_ips[i]; // mol C / m^2 
+        double substrate_C_per_m2 = *structural_carbon_ips[i]; // mol C / m^2 
         double substrate_C_concentration = *substrate_carbon_ips[i] / structural_C_per_m2;
+        double structural_senescence_rate;
+        double substrate_senescence_rate;
         double utilization_rate_per_m2 = structural_C_per_m2 * hill_reaction_rate(
             substrate_C_concentration, // [dimensionless]
             hill_coefficient,
             *utilization_rate_constant_ips[i],
             *utilization_km_ips[i]);  // mol / m2 / hr
 
-        double senescence_rate_per_m2 = senescence_logistic_rate(
-            structural_C_per_m2,
+        double senescence_fraction = senescence_logistic_fraction(
             DVI,
-            *senescence_rate_max_ips[i],
+            *senescence_fraction_max_ips[i],
             *senescence_alpha_ips[i],
             *senescence_beta_ips[i]);  // mol / m2 / hr
         
         if ((organs[i].name() == "Pod" && DVI < Pod_start_dvi) || DVI > stop_growth_dvi){
             utilization_rate_per_m2 = 0;
-            senescence_rate_per_m2 = 0;
+            senescence_fraction = 0;
         }
+        structural_senescence_rate = senescence_fraction * structural_C_per_m2;
+        substrate_senescence_rate = senescence_fraction * substrate_C_per_m2 * (1 - *senescence_reuse_factor_ips[i]);
+
         update(utilization_rate_ops[i], utilization_rate_per_m2);
-        update(senescence_rate_ops[i], senescence_rate_per_m2);
+        update(structural_senescence_rate_ops[i], structural_senescence_rate);
+        update(substrate_senescence_rate_ops[i], substrate_senescence_rate);
     }
 }
