@@ -16,14 +16,19 @@ Subsequent commits will then include a new "UNRELEASED" section in preparation
 for the next release.
 -->
 
-# skelBML VERSION 2.1.4
+# skelBML VERSION 2.2.0
 
 - Several changes were made to better comply with CRAN policies and to better
   match the BioCro framework R package:
-  - The included boost library was moved to `src/inc` from `inc`
+  - The included boost library was moved to `src/inc` from `inc` and updated to
+    version 1.89
   - Copyright holders of included libraries were added to the description
   - Citation guidelines were added
-  - The minimum supported version of R was changed to 3.6.0
+  - The minimum supported version of R was changed to 4.1.0
+  - The C++ language specification was changed to C++17
+  - The character limit for package names was decreased from 16 to 12
+- Any module libraries that were based on earlier versions of `skelBML` should
+  run `script/module_library_setup.R` when updating to version 2.1.4.
 
 # skelBML VERSION 2.1.3
 
