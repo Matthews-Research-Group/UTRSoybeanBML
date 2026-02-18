@@ -11,16 +11,17 @@ Authors@R: c(
     person('Boost Organization', role = 'cph',
            comment = 'Copyright holder of included Boost library')
     )
-Depends: R (>= 3.6.0)
+Depends: R (>= 4.1.0)
 Imports:
     stats
 Suggests:
     BioCro (>= 3.0.0),
-    testthat,
+    testthat (>= 3.2.0),
     knitr,
     lattice
 VignetteBuilder: knitr
-SystemRequirements: C++11, GNU make
+SystemRequirements: C++17, GNU make
 License: MIT + file LICENSE
 LazyData: true
 ByteCompile: TRUE
+Config/testthat/edition: 3
