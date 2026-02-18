@@ -41,7 +41,7 @@ package:
       `Rscript module_library_setup.R`.
 
    In either case, you will be prompted for a module library name, which should
-   be 16 or fewer characters long and not contain any underscores; ideally this
+   be 12 or fewer characters long and not contain any underscores; ideally this
    would match the name of the newly-created repository. (If you might ever want
    to submit your package to CRAN, make sure your name is unique on CRAN and
    BioConductor; one way to help ensure this is to include `BML` in the name.)
