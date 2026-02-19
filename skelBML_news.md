@@ -27,8 +27,17 @@ for the next release.
   - The minimum supported version of R was changed to 4.1.0
   - The C++ language specification was changed to C++17
   - The character limit for package names was decreased from 16 to 12
-- Any module libraries that were based on earlier versions of `skelBML` should
-  run `script/module_library_setup.R` when updating to version 2.1.4.
+- Notes about updating to version 2.2.0:
+  - When running `git merge upstream/main` to update, you may be asked
+    `Unlink of file 'inc' failed. Should I try again? (y/n)`. Answer `n` to this
+    question.
+  - After completing the merge, you may need to run
+    `git submodule update --init` to initialize the `inc` submodule in its new
+    location.
+  - Any module libraries that were based on earlier versions of `skelBML` should
+    run `script/module_library_setup.R` when updating to version 2.1.4. In
+    particular, there are important updates to `DESCRIPTION`, `LICENSE`,
+    `LICENSE.md`, `inst/CITATION`, and `src/skeleton_version.h`.
 
 # skelBML VERSION 2.1.3
 
