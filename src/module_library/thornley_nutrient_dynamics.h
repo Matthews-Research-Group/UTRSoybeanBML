@@ -104,7 +104,7 @@ double hill_reaction_rate(
 double const hill_coefficient = 2;
 
 double senescence_logistic_fraction(
-    double time,
+    double DVI,
     double max_senescence_fraction,
     double alpha,
     double beta);
