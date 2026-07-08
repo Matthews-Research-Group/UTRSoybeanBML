@@ -41,7 +41,7 @@ package:
       `Rscript module_library_setup.R`.
 
    In either case, you will be prompted for a module library name, which should
-   be 16 or fewer characters long and not contain any underscores; ideally this
+   be 12 or fewer characters long and not contain any underscores; ideally this
    would match the name of the newly-created repository. (If you might ever want
    to submit your package to CRAN, make sure your name is unique on CRAN and
    BioConductor; one way to help ensure this is to include `BML` in the name.)
@@ -117,9 +117,12 @@ skeleton module library in the future; every effort will be made to limit the
 frequency of these updates, but they will nevertheless occur. When there is an
 update to this repository, you can update your module library from it by taking
 the following steps:
-1. Make a new "development" branch for your repository (based on the main
-   branch) and make sure this branch is checked out in your working copy.
-2. Make sure you have a remote named `upstream` that points to the
+1. Check the
+   [skelBML news](https://github.com/biocro/skelBML/blob/main/skelBML_news.md)
+   for any version-specific notes about updating.
+2. Make a new branch for your repository and make sure this branch is checked
+   out in your working copy.
+3. Make sure you have a remote named `upstream` that points to the
    `biocro/skelBML` repository (_this_ repository). This can be done with the
    following command:
    ```
@@ -127,13 +130,16 @@ the following steps:
    ```
    If the remote already exists, you will get an error, but there is no harm in
    running the command.
-3. Update from the remote using the commands
+4. Update from the remote using the commands
    ```
    git fetch upstream
    git merge upstream/main
    ```
-   You may need to address one or more merge conflicts at this point.
-4. Complete the update as follows:
+   You may need to address one or more merge conflicts at this point. One merge
+   conflict will be related to `skelBML_news.md`; this file will be deleted when
+   running the script in Step 5 below, so it does not matter how this conflict
+   is resolved.
+5. Complete the update as follows:
    1. Rerun the setup script, running it as described above.
    2. Any files that would be changed by the script will be backed up; for
       example, if the script would modify
@@ -145,15 +151,14 @@ the following steps:
       customizations that should be retained in the new version of those files,
       such as the table of modules, the package title, etc. Delete backups as
       you see fit.
-5. To confirm that everything worked, try building and checking the package on
-   the development branch with `R CMD build` and `R CMD check`.
-6. When everything is working, commit the changed files to the development
-   branch, and then merge the branch into the main branch of your repository
+6. To confirm that everything worked, try building and checking the package with
+   `R CMD build` and `R CMD check`.
+7. When everything is working, commit the changed files to the new branch, and
+   then merge the branch into the main or development branch of your repository
    (possibly by first creating a pull request if you are working with a team).
 
-Updating your repository on a development branch as described in these steps
-will allow you to test out the changes before committing them to your main
-branch.
+Updating your repository on a separate branch as described in these steps
+will allow you to safely test out the changes before finalizing them.
 
 ### Making contributions
 
