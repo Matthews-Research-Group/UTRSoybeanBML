@@ -25,6 +25,7 @@ thornley_transport_calculator::thornley_transport_calculator(
       // Get pointers to input parameters
       substrate_carbon_ips(get_transport_link_ips(input_quantities, organ_links, "substrate_carbon")),
       structural_carbon_ips(get_transport_link_ips(input_quantities, organ_links, "structural_carbon")),
+      utilization_rate_ips(get_transport_link_ips(input_quantities, organ_links, "utilization_rate")),
       
       // Get references to input parameters
       substrate_conductance_ips(get_ip(input_quantities, generate_pairwise_names("substrate_conductance", organ_links))),
@@ -45,7 +46,8 @@ std::vector<std::string> thornley_transport_calculator::get_inputs(std::vector<t
     std::vector<std::string> quantities_for_each_organ = {
         "",                  // Mg / ha
         "substrate_carbon",  // mol / m^2
-        "structural_carbon"  // mol / m^2
+        "structural_carbon", // mol / m^2
+        "utilization_rate"   // mol / m^2 / hr
     };
 
     // Append the organ names as prefixes
@@ -76,11 +78,34 @@ void thornley_transport_calculator::do_multi_organ_operation() const
     for (size_t i = 0; i < organ_links.size(); ++i) {
         double const pairwise_mass = std::min(*structural_carbon_ips[i].first, *structural_carbon_ips[i].second);  ;  // mol / m^2
         double const beta_factor = pow(pairwise_mass, transportation_gamma_exponent);   // [mol/m^2]^gamma
-        double const substrate_gradient = (*substrate_carbon_ips[i].first / *structural_carbon_ips[i].first -
-                                          *substrate_carbon_ips[i].second / *structural_carbon_ips[i].second);   // [dimensionless]
+        double const substrate_carbon_after_utilization_first = *substrate_carbon_ips[i].first - *utilization_rate_ips[i].first;  // mol / m^2
+        double const substrate_carbon_after_utilization_second = *substrate_carbon_ips[i].second - *utilization_rate_ips[i].second;  // mol / m^2
+
+        double const substrate_gradient = (substrate_carbon_after_utilization_first / *structural_carbon_ips[i].first -
+                                          substrate_carbon_after_utilization_second / *structural_carbon_ips[i].second);   // [dimensionless]
+
         double transport_rate = beta_factor * *substrate_conductance_ips[i] * substrate_gradient;  // mol / m^2 / hr
         
-        if ((organ_links[i].second.name() == "Pod" && (DVI < Pod_start_dvi)) || (DVI>stop_growth_dvi)){
+        // Ensure that the transport rate does not exceed the available substrate carbon after utilization
+        // If the transport rate is positive, it means substrate is moving from the first organ to the second organ
+        if(transport_rate > 0 && substrate_carbon_after_utilization_first < transport_rate) {
+            if(substrate_carbon_after_utilization_first <= 0) {
+                transport_rate = 0;
+            } else {
+                transport_rate = substrate_carbon_after_utilization_first;
+            }
+        }
+        // If the transport rate is negative, it means substrate is moving from the second organ to the first organ
+        if(transport_rate < 0 && substrate_carbon_after_utilization_second < -transport_rate) {
+            if(substrate_carbon_after_utilization_second <= 0) {
+                transport_rate = 0;
+            } else {
+                transport_rate = -substrate_carbon_after_utilization_second;
+            }
+        }
+        
+        if ((organ_links[i].second.name() == "Pod" && 
+            (DVI < Pod_start_dvi)) || (DVI>stop_growth_dvi)) {
             transport_rate = 0;
         }
 

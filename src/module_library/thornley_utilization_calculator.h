@@ -5,6 +5,7 @@
 #include <string>
 #include "../framework/module.h"
 #include "../framework/state_map.h"
+#include "../framework/constants.h"
 #include "thornley_nutrient_dynamics.h"
 
 /**
@@ -83,6 +84,7 @@ class thornley_utilization_calculator : public direct_module
     // Pointers to input parameters
     std::vector<double const*> const structural_carbon_ips;
     std::vector<double const*> const substrate_carbon_ips;
+    std::vector<double const*> const substrate_carbon_source_rate_ips;
     std::vector<double const*> const utilization_rate_constant_ips;
     std::vector<double const*> const utilization_km_ips;
     std::vector<double const*> const senescence_fraction_max_ips;
@@ -99,6 +101,7 @@ class thornley_utilization_calculator : public direct_module
     std::vector<double*> const utilization_rate_ops;
     std::vector<double*> const structural_senescence_rate_ops;
     std::vector<double*> const substrate_senescence_rate_ops;
+    std::vector<double*> const substrate_carbon_source_rate_updated_ops;
 
    protected:
     void do_multi_organ_operation() const;

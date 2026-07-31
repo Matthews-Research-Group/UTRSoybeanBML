@@ -74,6 +74,7 @@ class thornley_transport_calculator : public direct_module
     // Pointers to input parameters
     std::vector<std::pair<double const*, double const*>> const substrate_carbon_ips;
     std::vector<std::pair<double const*, double const*>> const structural_carbon_ips;
+    std::vector<std::pair<double const*, double const*>> const utilization_rate_ips;
     std::vector<double const*> const substrate_conductance_ips;
 
     // References to input parameters

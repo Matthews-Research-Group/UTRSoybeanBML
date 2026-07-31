@@ -3,7 +3,7 @@
 #include "../framework/module.h"                  // for differential_module and update
 #include "../framework/module_helper_functions.h"  // for get_ip
 #include "../framework/constants.h"                // for getting physical constants
-#include "thornley_nutrient_dynamics.h"  // for the thornley_nutrient_dynamics namespace
+#include "thornley_nutrient_dynamics.h"            // for the thornley_nutrient_dynamics namespace
 #include "thornley_utilization.h"
 
 using thornley_nutrient_dynamics::generate_multi_organ_quantity_names;
@@ -25,11 +25,13 @@ thornley_utilization::thornley_utilization(
 
       // Get pointers to input parameters
       carbon_to_mass_factor_ips(get_multi_organ_ips(input_quantities, organs, "carbon_to_mass_factor")),
-      substrate_carbon_source_rate_ips(get_external_substrate_ips(input_quantities, organs)),
+      // substrate_carbon_source_rate_ips(get_external_substrate_ips(input_quantities, organs)),
+      substrate_carbon_source_rate_updated_ips(get_multi_organ_ips(input_quantities, organs, "substrate_carbon_source_rate_updated")),
       utilization_rate_ips(get_multi_organ_ips(input_quantities, organs, "utilization_rate")),
       respiration_factor_ips(get_multi_organ_ips(input_quantities, organs, "respiration_factor")),
       structural_senescence_rate_ips(get_multi_organ_ips(input_quantities, organs, "structural_senescence_rate")),
       substrate_senescence_rate_ips(get_multi_organ_ips(input_quantities, organs, "substrate_senescence_rate")),
+      canopy_gross_assimilation_rate_ip(get_ip(input_quantities, "canopy_gross_assimilation_rate")),
 
       // Get reference to input parameters
       stop_growth_dvi(get_input(input_quantities, "stop_growth_dvi")),
@@ -39,7 +41,11 @@ thornley_utilization::thornley_utilization(
       structural_carbon_ops(get_multi_organ_ops(output_quantities, organs, "structural_carbon")),
       substrate_carbon_ops(get_multi_organ_ops(output_quantities, organs, "substrate_carbon")),
       respiration_loss_ops(get_multi_organ_ops(output_quantities, organs, "respiration_loss")),
-      senescence_loss_ops(get_multi_organ_ops(output_quantities, organs, "senescence_loss"))
+      senescence_loss_ops(get_multi_organ_ops(output_quantities, organs, "senescence_loss")),
+      cumulative_utilization_ops(get_multi_organ_ops(output_quantities, organs, "cumulative_utilization")),
+      cumulative_growth_ops(get_multi_organ_ops(output_quantities, organs, "cumulative_growth")),
+      cumulative_net_assimilation_ops(get_multi_organ_ops(output_quantities, organs, "cumulative_net_assimilation")),
+      cumulative_gross_assimilation_op(get_op(output_quantities, "cumulative_gross_assimilation"))
 {
 }
 
@@ -48,6 +54,7 @@ std::vector<std::string> thornley_utilization::get_inputs(std::vector<organ> con
     // List the quantity names that are guaranteed to exist for each organ
     std::vector<std::string> quantities_for_each_organ = {
         "" ,                            // Mg / ha
+        "substrate_carbon_source_rate_updated",           // mol / m^2
         "utilization_rate",             // mol / m^2 / hr
         "structural_senescence_rate",   // mol / m^2 / hr
         "substrate_senescence_rate",    // mol / m^2 / hr
@@ -69,15 +76,20 @@ std::vector<std::string> thornley_utilization::get_outputs(std::vector<organ> co
 {
     // List the quantity names that exist for each organ
     std::vector<std::string> quantities_for_each_organ = {
-        "structural_carbon",  // mol / m^2
-        "substrate_carbon",   // mol / m^2
-        "respiration_loss",    // mol / m^2 / hr
-        "senescence_loss"    // Mg / ha / hr
+        "structural_carbon",            // mol / m^2
+        "substrate_carbon",             // mol / m^2
+        "respiration_loss",             // mol / m^2
+        "senescence_loss",              // Mg / ha
+        "cumulative_utilization",       // mol / m^2
+        "cumulative_growth",            // mol / m^2
+        "cumulative_net_assimilation"   // mol / m^2
     };
 
     // Append the organ names as prefixes
     std::vector<std::string> outputs = generate_multi_organ_quantity_names(organs, quantities_for_each_organ);
-
+    // Append the gross assimilation rate output
+    outputs.push_back("cumulative_gross_assimilation");
+    
     return outputs;
 }
 
@@ -90,7 +102,11 @@ void thornley_utilization::do_multi_organ_operation() const
     // For Pod, utilization is switched off before a threshold DOY
     for (size_t i = 0; i < organs.size(); ++i) {
         double change_in_substrate_pool_per_m2 = - *utilization_rate_ips[i] - *substrate_senescence_rate_ips[i]; // mol / m^2 / hr 
-        if (substrate_carbon_source_rate_ips[i] && DVI < stop_growth_dvi) {
+
+        // double const cf = 0.6 / physical_constants::molar_mass_of_glucose;   // (mol C / m^2) / (Mg glucose / hr)
+        change_in_substrate_pool_per_m2 += *substrate_carbon_source_rate_updated_ips[i];  //* cf;  // mol C / m^2
+
+        // if (substrate_carbon_source_rate_ips[i] && DVI < stop_growth_dvi) {
             // TEMPORARY: We must convert the substrate carbon source rate from
             // Mg / ha / hr to mol / m^2 / hr, assuming that all carbon was
             // converted into biomass in the form of glucose (C6H12O6), i.e.,
@@ -105,20 +121,25 @@ void thornley_utilization::do_multi_organ_operation() const
             // long term, it would be nice for BioCro to use molar flux
             // densities everywhere, and this conversion will no longer be
             // required in that case.
-            double const cf = 0.6 / physical_constants::molar_mass_of_glucose;   // (mol C / m^2) / (Mg glucose / hr)
-            change_in_substrate_pool_per_m2 += *substrate_carbon_source_rate_ips[i] * cf;  // mol C / m^2
-        }
+        //     double const cf = 0.6 / physical_constants::molar_mass_of_glucose;   // (mol C / m^2) / (Mg glucose / hr)
+        //     change_in_substrate_pool_per_m2 += *substrate_carbon_source_rate_ips[i] * cf;  // mol C / m^2
+        // }
 
         // senescence rate 
         double litter = (*structural_senescence_rate_ips[i] + *substrate_senescence_rate_ips[i]) * *carbon_to_mass_factor_ips[i] ;  // Mg / ha / hr
-        double respiration_loss = *respiration_factor_ips[i] * *utilization_rate_ips[i];  // mol C / m^2 / hr
+        double respiration_rate = *respiration_factor_ips[i] * *utilization_rate_ips[i];  // mol C / m^2 / hr
         double growth_from_utilization_per_m2 = (*utilization_rate_ips[i]\
-                                         - respiration_loss \
+                                         - respiration_rate \
                                          - *structural_senescence_rate_ips[i]);     // mol / m^2 / hr
 
-        update(substrate_carbon_ops[i], change_in_substrate_pool_per_m2); // mol / m^2
-        update(structural_carbon_ops[i], growth_from_utilization_per_m2); // mol / m^2
-        update(respiration_loss_ops[i], respiration_loss);         // mol C / m^2
-        update(senescence_loss_ops[i], litter);                    // Mg / ha
+        update(substrate_carbon_ops[i], change_in_substrate_pool_per_m2);       // mol / m^2
+        update(structural_carbon_ops[i], growth_from_utilization_per_m2);       // mol / m^2
+        update(respiration_loss_ops[i], respiration_rate);                      // mol C / m^2
+        update(senescence_loss_ops[i], litter);                                 // Mg / ha
+        update(cumulative_utilization_ops[i], *utilization_rate_ips[i]);        // mol / m^2
+        update(cumulative_growth_ops[i], *utilization_rate_ips[i] - respiration_rate);     // mol / m^2
+        update(cumulative_net_assimilation_ops[i], *substrate_carbon_source_rate_updated_ips[i]);  // mol / m^2
     }
+    double const cf = 0.6 / physical_constants::molar_mass_of_glucose;   // (mol C / m^2) / (Mg glucose / hr)
+    update(cumulative_gross_assimilation_op, *canopy_gross_assimilation_rate_ip * cf);  // mol / m^2
 }

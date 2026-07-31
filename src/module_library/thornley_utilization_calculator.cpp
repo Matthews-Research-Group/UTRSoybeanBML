@@ -3,6 +3,7 @@
 #include "../framework/module.h"                  // for direct_module and update
 #include "../framework/module_helper_functions.h"  // for get_ip, get_input
 #include "thornley_nutrient_dynamics.h"  // for the thornley_nutrient_dynamics namespace
+#include "../framework/constants.h"                // for getting physical constants
 #include "thornley_utilization_calculator.h"
 
 using thornley_nutrient_dynamics::generate_multi_organ_quantity_names;
@@ -27,6 +28,7 @@ thornley_utilization_calculator::thornley_utilization_calculator(
       // Get pointers to input quantities
       structural_carbon_ips(get_multi_organ_ips(input_quantities, organs, "structural_carbon")),
       substrate_carbon_ips(get_multi_organ_ips(input_quantities, organs, "substrate_carbon")),
+      substrate_carbon_source_rate_ips(get_external_substrate_ips(input_quantities, organs)),
 
       // Get pointers to input parameters
       utilization_rate_constant_ips(get_multi_organ_ips(input_quantities, organs, "utilization_rate_constant")),
@@ -44,7 +46,8 @@ thornley_utilization_calculator::thornley_utilization_calculator(
       // Get pointers to output parameters
       utilization_rate_ops(get_multi_organ_ops(output_quantities, organs, "utilization_rate")),
       structural_senescence_rate_ops(get_multi_organ_ops(output_quantities, organs, "structural_senescence_rate")),
-      substrate_senescence_rate_ops(get_multi_organ_ops(output_quantities, organs, "substrate_senescence_rate"))
+      substrate_senescence_rate_ops(get_multi_organ_ops(output_quantities, organs, "substrate_senescence_rate")),
+      substrate_carbon_source_rate_updated_ops(get_multi_organ_ops(output_quantities, organs, "substrate_carbon_source_rate_updated"))
 {
 }
 
@@ -78,6 +81,7 @@ std::vector<std::string> thornley_utilization_calculator::get_outputs(std::vecto
         "utilization_rate",  // mol / m^2 / hr
         "structural_senescence_rate",   // mol / m^2 / hr
         "substrate_senescence_rate",   // mol / m^2 / hr
+        "substrate_carbon_source_rate_updated"   // Mg / ha / hr
     };
     return generate_multi_organ_quantity_names(organs, quantities_for_each_organ);
 }
@@ -89,7 +93,7 @@ void thornley_utilization_calculator::do_multi_organ_operation() const
     for (size_t i = 0; i < organs.size(); ++i) {
         // double total_C_per_m2 = *structural_carbon_ips[i] + *substrate_carbon_ips[i] ; // mol C / m^2 
         double structural_C_per_m2 = *structural_carbon_ips[i]; // mol C / m^2 
-        double substrate_C_per_m2 = *structural_carbon_ips[i]; // mol C / m^2 
+        double substrate_C_per_m2 = *substrate_carbon_ips[i]; // mol C / m^2 
         double substrate_C_concentration = *substrate_carbon_ips[i] / structural_C_per_m2;
         double structural_senescence_rate;
         double substrate_senescence_rate;
@@ -105,15 +109,35 @@ void thornley_utilization_calculator::do_multi_organ_operation() const
             *senescence_alpha_ips[i],
             *senescence_beta_ips[i]);  // mol / m2 / hr
         
-        if ((organs[i].name() == "Pod" && DVI < Pod_start_dvi) || DVI > stop_growth_dvi){
+        if ((organs[i].name() == "Pod" && DVI < Pod_start_dvi) || DVI > stop_growth_dvi || substrate_C_per_m2 <= 0) {
             utilization_rate_per_m2 = 0;
             senescence_fraction = 0;
+        } else if (substrate_C_per_m2 <= utilization_rate_per_m2) {
+            utilization_rate_per_m2 = substrate_C_per_m2;
         }
+
+        // for organs without external carbon substrate source, 
+        // or for organs with external carbon substrate source but the substrate pool is negative,
+        // we set the substrate carbon source rate to 0.
+        double assim_rate_updated = 0; 
+
+        if(organs[i].has_external_carbon_substrate_source() && substrate_C_per_m2 > 0) { 
+            double const cf = 0.6 / physical_constants::molar_mass_of_glucose;   // (mol C / m^2) / (Mg glucose / hr)
+            double assim_rate = *substrate_carbon_source_rate_ips[i] * cf ; // mol / m^2 / hr
+            assim_rate_updated = assim_rate;
+            // If the substrate pool is enough to support the source rate. 
+            // we need to update the source rate to be equal to the substrate pool 
+            if (assim_rate < 0 && substrate_C_per_m2 <= -assim_rate) {
+                assim_rate_updated = -substrate_C_per_m2;
+            }
+        }
+
         structural_senescence_rate = senescence_fraction * structural_C_per_m2;
         substrate_senescence_rate = senescence_fraction * substrate_C_per_m2 * (1 - *senescence_reuse_factor_ips[i]);
 
         update(utilization_rate_ops[i], utilization_rate_per_m2);
         update(structural_senescence_rate_ops[i], structural_senescence_rate);
         update(substrate_senescence_rate_ops[i], substrate_senescence_rate);
+        update(substrate_carbon_source_rate_updated_ops[i], assim_rate_updated);
     }
 }
