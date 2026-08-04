@@ -1,15 +1,16 @@
 # Checks whether `args_to_check` has names. The other checking functions require
 # names to give useful error messages.
 check_names <- function(args_to_check) {
-    if(is.null(names(args_to_check))) {
+    if (is.null(names(args_to_check))) {
         stop(paste0("`", substitute(args_to_check), "` must have names"))
     }
 }
 
-# Sends the error messages to the user in the proper format
-send_error_messages <- function(error_messages) {
+# Sends the error messages to the user in the proper format. Don't include the
+# call to `stop_and_send_error_messages` in the message itself.
+stop_and_send_error_messages <- function(error_messages) {
     if (length(error_messages) > 0) {
-        stop(paste(error_messages, collapse='  '))
+        stop(paste(error_messages, collapse='  '), call. = FALSE)
     }
 }
 
