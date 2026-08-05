@@ -41,7 +41,6 @@ std::vector<std::string> thornley_biomass_calculator::get_inputs(
 {
     // List the quantity names that are guaranteed to exist for each organ
     std::vector<std::string> quantities_for_each_organ = {
-        "",                         // Mg / ha
         "substrate_carbon",         // mol / m^2
         "structural_carbon",        // mol / m^2
         "carbon_to_mass_factor"     // Mg/ha / (mol/m^2)
