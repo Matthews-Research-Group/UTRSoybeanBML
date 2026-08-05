@@ -39,15 +39,15 @@ thornley_biomass_calculator::thornley_biomass_calculator(
 std::vector<std::string> thornley_biomass_calculator::get_inputs(
     std::vector<organ> const& organs)
 {
-    // Add the external substrate sources
-    std::vector<std::string> inputs = get_external_substrate_quantity_names(organs);  // mol / m^2
-
     // List the quantity names that are guaranteed to exist for each organ
     std::vector<std::string> quantities_for_each_organ = {
+        "",                         // Mg / ha
         "substrate_carbon",         // mol / m^2
         "structural_carbon",        // mol / m^2
         "carbon_to_mass_factor"     // Mg/ha / (mol/m^2)
     };
+    // Append the organ names as prefixes
+    std::vector<std::string> inputs = generate_multi_organ_quantity_names(organs, quantities_for_each_organ);  
 
     return inputs;
 }
