@@ -71,6 +71,7 @@ std::vector<std::string> thornley_utilization_calculator::get_inputs(std::vector
     inputs.push_back("Pod_start_dvi");
     inputs.push_back("stop_growth_dvi");
     inputs.push_back("DVI");  
+    inputs.push_back("canopy_assimilation_rate");  // Mg / ha / hr
     return inputs;
 }
 

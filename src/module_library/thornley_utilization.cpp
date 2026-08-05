@@ -54,6 +54,7 @@ std::vector<std::string> thornley_utilization::get_inputs(std::vector<organ> con
     // List the quantity names that are guaranteed to exist for each organ
     std::vector<std::string> quantities_for_each_organ = {
         "" ,                            // Mg / ha
+        "carbon_to_mass_factor",        // dimensionless
         "substrate_carbon_source_rate_updated",           // mol / m^2
         "utilization_rate",             // mol / m^2 / hr
         "structural_senescence_rate",   // mol / m^2 / hr
@@ -67,6 +68,7 @@ std::vector<std::string> thornley_utilization::get_inputs(std::vector<organ> con
     // Add the external substrate sources
     std::vector<std::string> external_substrate_source_names = get_external_substrate_quantity_names(organs);  // Mg / ha / hr
     inputs.insert(inputs.end(), external_substrate_source_names.begin(), external_substrate_source_names.end());
+    inputs.push_back("canopy_gross_assimilation_rate");  // Mg / ha / hr
     inputs.push_back("stop_growth_dvi");
     inputs.push_back("DVI");
     return inputs;
